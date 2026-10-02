@@ -1,98 +1,275 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import axios from "axios";
+import { useEffect, useState } from "react";
+import {
+	FlatList,
+	KeyboardAvoidingView,
+	Platform,
+	SafeAreaView,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+const API_URL = "http://localhost:8080/api/notes";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
+interface Note {
+	id: number;
+	title: string;
+	content: string;
 }
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+export default function App() {
+	const [notes, setNotes] = useState<Note[]>([]);
+	const [title, setTitle] = useState<string>("");
+	const [content, setContent] = useState<string>("");
+	const [loading, setLoading] = useState<boolean>(false);
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+	const fetchNotes = async () => {
+		try {
+			const response = await axios.get<Note[]>(API_URL);
+			setNotes(response.data);
+		} catch (error) {
+			console.error("Notlar getirilirken hata oluştu:", error);
+		}
+	};
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+	useEffect(() => {
+		fetchNotes();
+	}, []);
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
-  );
+	const handleSubmit = async () => {
+		if (!title.trim() || !content.trim()) return;
+
+		setLoading(true);
+		try {
+			await axios.post(API_URL, { title, content });
+			setTitle("");
+			setContent("");
+			fetchNotes();
+		} catch (error) {
+			console.error("Not eklenirken hata oluştu:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleDelete = async (id: number) => {
+		try {
+			await axios.delete(`${API_URL}/${id}`);
+			fetchNotes();
+		} catch (error) {
+			console.error("Not silinirken hata oluştu:", error);
+		}
+	};
+
+	const renderItem = ({ item }: { item: Note }) => (
+		<View style={styles.noteCard}>
+			<View style={styles.noteInfo}>
+				<Text style={styles.noteTitle}>{item.title}</Text>
+				<Text style={styles.noteContent}>{item.content}</Text>
+			</View>
+			<TouchableOpacity
+				style={styles.deleteButton}
+				onPress={() => handleDelete(item.id)}
+			>
+				<Text style={styles.deleteButtonText}>Sil</Text>
+			</TouchableOpacity>
+		</View>
+	);
+
+	return (
+		<SafeAreaView style={styles.container}>
+			<KeyboardAvoidingView
+				behavior={Platform.OS === "ios" ? "padding" : "height"}
+				style={styles.innerContainer}
+			>
+				<View style={styles.header}>
+					<Text style={styles.title}>Not Defteri</Text>
+					<Text style={styles.subtitle}>
+						Spring Boot & React Native Mobil Paneli
+					</Text>
+				</View>
+
+				<View style={styles.formSection}>
+					<Text style={styles.sectionTitle}>Yeni Not Oluştur</Text>
+					<TextInput
+						style={styles.input}
+						placeholder="Başlık girin..."
+						placeholderTextColor="#64748b"
+						value={title}
+						onChangeText={setTitle}
+					/>
+					<TextInput
+						style={[styles.input, styles.textarea]}
+						placeholder="Not içeriğini buraya yazın..."
+						placeholderTextColor="#64748b"
+						value={content}
+						onChangeText={setContent}
+						multiline
+					/>
+					<TouchableOpacity
+						style={[styles.button, loading && { opacity: 0.7 }]}
+						onPress={handleSubmit}
+						disabled={loading}
+					>
+						<Text style={styles.buttonText}>
+							{loading ? "Kaydediliyor..." : "Notu Kaydet"}
+						</Text>
+					</TouchableOpacity>
+				</View>
+
+				<View style={styles.listHeader}>
+					<Text style={styles.sectionTitle}>Kayıtlı Notlar</Text>
+					<Text style={styles.counter}>{notes.length} Adet</Text>
+				</View>
+
+				{notes.length === 0 ? (
+					<View style={styles.emptyBox}>
+						<Text style={styles.emptyText}>
+							Veritabanında henüz kayıtlı bir not bulunmuyor.
+						</Text>
+					</View>
+				) : (
+					<FlatList<Note>
+						data={notes}
+						renderItem={renderItem}
+						keyExtractor={(item) => item.id.toString()}
+						contentContainerStyle={styles.listContainer}
+					/>
+				)}
+			</KeyboardAvoidingView>
+		</SafeAreaView>
+	);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+	container: {
+		flex: 1,
+		backgroundColor: "#0f172a",
+	},
+	innerContainer: {
+		flex: 1,
+		paddingHorizontal: 20,
+		paddingTop: 20,
+	},
+	header: {
+		borderBottomWidth: 1,
+		borderBottomColor: "#1e293b",
+		paddingBottom: 15,
+		marginBottom: 20,
+	},
+	title: {
+		fontSize: 22,
+		fontWeight: "700",
+		color: "#ffffff",
+		marginBottom: 4,
+	},
+	subtitle: {
+		fontSize: 13,
+		color: "#94a3b8",
+	},
+	formSection: {
+		marginBottom: 20,
+	},
+	sectionTitle: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#e2e8f0",
+		marginBottom: 12,
+	},
+	input: {
+		backgroundColor: "#1e293b",
+		borderWidth: 1,
+		borderColor: "#334155",
+		borderRadius: 6,
+		padding: 12,
+		color: "#ffffff",
+		fontSize: 14,
+		marginBottom: 12,
+	},
+	textarea: {
+		height: 80,
+		textAlignVertical: "top",
+	},
+	button: {
+		backgroundColor: "#3b82f6",
+		borderRadius: 6,
+		padding: 14,
+		alignItems: "center",
+	},
+	buttonText: {
+		color: "#ffffff",
+		fontSize: 14,
+		fontWeight: "600",
+	},
+	listHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		borderBottomWidth: 1,
+		borderBottomColor: "#1e293b",
+		paddingBottom: 8,
+		marginBottom: 12,
+	},
+	counter: {
+		fontSize: 13,
+		color: "#94a3b8",
+	},
+	emptyBox: {
+		padding: 30,
+		alignItems: "center",
+		borderWidth: 1,
+		borderColor: "#334155",
+		borderStyle: "dashed",
+		borderRadius: 6,
+		marginTop: 10,
+	},
+	emptyText: {
+		fontSize: 13,
+		color: "#64748b",
+		textAlign: "center",
+	},
+	listContainer: {
+		paddingBottom: 20,
+	},
+	noteCard: {
+		backgroundColor: "#1e293b",
+		borderWidth: 1,
+		borderColor: "#334155",
+		borderRadius: 6,
+		padding: 14,
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+		marginBottom: 10,
+	},
+	noteInfo: {
+		flex: 1,
+		marginRight: 10,
+	},
+	noteTitle: {
+		fontSize: 15,
+		fontWeight: "600",
+		color: "#f8fafc",
+		marginBottom: 4,
+	},
+	noteContent: {
+		fontSize: 13,
+		color: "#94a3b8",
+		lineHeight: 18,
+	},
+	deleteButton: {
+		borderWidth: 1,
+		borderColor: "#7f1d1d",
+		borderRadius: 6,
+		paddingVertical: 6,
+		paddingHorizontal: 10,
+	},
+	deleteButtonText: {
+		color: "#ef4444",
+		fontSize: 12,
+		fontWeight: "600",
+	},
 });
