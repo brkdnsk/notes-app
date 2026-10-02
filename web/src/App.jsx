@@ -50,235 +50,264 @@ function App() {
 	};
 
 	return (
-		<div style={styles.container}>
+		<div style={styles.layout}>
 			<header style={styles.header}>
-				<h1 style={styles.appTitle}>✨ Not Defterim</h1>
-				<p style={styles.appSubtitle}>
-					Spring Boot & React Full-Stack Projesi
+				<div style={styles.headerContent}>
+					<h1 style={styles.brandTitle}>Notes Dashboard</h1>
+					<span style={styles.envBadge}>Production</span>
+				</div>
+				<p style={styles.brandSubtitle}>
+					Spring Boot & React Enterprise Workspace
 				</p>
 			</header>
 
-			{/* Not Ekleme Form Kartı */}
-			<div style={styles.card}>
-				<h2 style={styles.cardTitle}>Yeni Not Ekle</h2>
-				<form onSubmit={handleSubmit} style={styles.form}>
-					<input
-						type="text"
-						placeholder="Not Başlığı..."
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-						style={styles.input}
-					/>
-					<textarea
-						placeholder="Not içeriğini buraya yazın..."
-						value={content}
-						onChange={(e) => setContent(e.target.value)}
-						rows="3"
-						style={styles.textarea}
-					/>
-					<button
-						type="submit"
-						style={{
-							...styles.button,
-							opacity: loading ? 0.7 : 1,
-							cursor: loading ? "not-allowed" : "pointer",
-						}}
-						disabled={loading}
-					>
-						{loading ? "Ekleniyor..." : "➕ Notu Kaydet"}
-					</button>
-				</form>
-			</div>
+			<main style={styles.mainContainer}>
+				{/* Form Section */}
+				<section style={styles.panel}>
+					<h2 style={styles.panelTitle}>Create New Note</h2>
+					<form onSubmit={handleSubmit} style={styles.form}>
+						<div style={styles.inputGroup}>
+							<label style={styles.label}>Title</label>
+							<input
+								type="text"
+								placeholder="Enter note title..."
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+								style={styles.input}
+							/>
+						</div>
+						<div style={styles.inputGroup}>
+							<label style={styles.label}>Content</label>
+							<textarea
+								placeholder="Write your note content here..."
+								value={content}
+								onChange={(e) => setContent(e.target.value)}
+								rows={4}
+								style={styles.textarea}
+							/>
+						</div>
+						<button
+							type="submit"
+							style={{
+								...styles.primaryButton,
+								opacity: loading ? 0.6 : 1,
+								cursor: loading ? "not-allowed" : "pointer",
+							}}
+							disabled={loading}
+						>
+							{loading ? "Processing..." : "Save Note"}
+						</button>
+					</form>
+				</section>
 
-			{/* Notlar Listesi Bölümü */}
-			<section style={styles.section}>
-				<div style={styles.sectionHeader}>
-					<h2 style={styles.sectionTitle}>Notlarım</h2>
-					<span style={styles.badge}>{notes.length} Not</span>
-				</div>
+				{/* Notes List Section */}
+				<section style={styles.panel}>
+					<div style={styles.panelHeader}>
+						<h2 style={styles.panelTitle}>Recorded Notes</h2>
+						<span style={styles.counter}>{notes.length} Entries</span>
+					</div>
 
-				{notes.length === 0 ? (
-					<div style={styles.emptyState}>
-						<p>
-							📭 Henüz hiç not eklenmemiş. Yukarıdan ilk notunu
-							oluşturabilirsin!
-						</p>
-					</div>
-				) : (
-					<div style={styles.notesGrid}>
-						{notes.map((note) => (
-							<div key={note.id} style={styles.noteCard}>
-								<div style={styles.noteContentWrapper}>
-									<h3 style={styles.noteTitle}>{note.title}</h3>
-									<p style={styles.noteText}>{note.content}</p>
-								</div>
-								<button
-									onClick={() => handleDelete(note.id)}
-									style={styles.deleteButton}
-									title="Notu Sil"
-								>
-									🗑️ Sil
-								</button>
-							</div>
-						))}
-					</div>
-				)}
-			</section>
+					{notes.length === 0 ? (
+						<div style={styles.emptyState}>
+							<p style={styles.emptyText}>
+								No records found in the database.
+							</p>
+						</div>
+					) : (
+						<div style={styles.notesList}>
+							{notes.map((note) => (
+								<article key={note.id} style={styles.noteCard}>
+									<div style={styles.noteBody}>
+										<h3 style={styles.noteTitle}>{note.title}</h3>
+										<p style={styles.noteContent}>{note.content}</p>
+									</div>
+									<button
+										onClick={() => handleDelete(note.id)}
+										style={styles.deleteButton}
+									>
+										Delete
+									</button>
+								</article>
+							))}
+						</div>
+					)}
+				</section>
+			</main>
 		</div>
 	);
 }
 
-// Inline stil nesneleri (Modern ve şık bir görünüm için)
+// Kurumsal ve Minimalist Stil Tanımlamaları
 const styles = {
-	container: {
-		maxWidth: "700px",
-		margin: "40px auto",
+	layout: {
+		maxWidth: "900px",
+		margin: "0 auto",
+		padding: "40px 24px",
 		fontFamily:
-			'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-		padding: "0 20px",
-		color: "#2d3748",
+			'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+		backgroundColor: "#0f172a",
+		minHeight: "100vh",
+		color: "#f8fafc",
 	},
 	header: {
-		textAlign: "center",
-		marginBottom: "35px",
+		marginBottom: "32px",
+		borderBottom: "1px solid #1e293b",
+		paddingBottom: "20px",
 	},
-	appTitle: {
-		fontSize: "2.5rem",
-		fontWeight: "800",
-		color: "#1a202c",
-		margin: "0 0 8px 0",
-		letterSpacing: "-0.5px",
+	headerContent: {
+		display: "flex",
+		alignItems: "center",
+		gap: "12px",
 	},
-	appSubtitle: {
-		fontSize: "1rem",
-		color: "#718096",
+	brandTitle: {
+		fontSize: "1.5rem",
+		fontWeight: "600",
+		letterSpacing: "-0.025em",
+		color: "#ffffff",
 		margin: "0",
 	},
-	card: {
-		backgroundColor: "#ffffff",
-		borderRadius: "12px",
-		padding: "25px",
-		boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
-		border: "1px solid #e2e8f0",
-		marginBottom: "40px",
+	envBadge: {
+		fontSize: "0.75rem",
+		fontWeight: "500",
+		backgroundColor: "#1e293b",
+		color: "#38bdf8",
+		padding: "2px 8px",
+		borderRadius: "4px",
+		border: "1px solid #334155",
 	},
-	cardTitle: {
-		fontSize: "1.2rem",
+	brandSubtitle: {
+		fontSize: "0.875rem",
+		color: "#94a3b8",
+		margin: "4px 0 0 0",
+	},
+	mainContainer: {
+		display: "grid",
+		gap: "24px",
+	},
+	panel: {
+		backgroundColor: "#1e293b",
+		borderRadius: "8px",
+		border: "1px solid #334155",
+		padding: "24px",
+	},
+	panelTitle: {
+		fontSize: "1rem",
 		fontWeight: "600",
-		color: "#2d3748",
-		marginTop: "0",
-		marginBottom: "20px",
+		color: "#f1f5f9",
+		margin: "0 0 16px 0",
+	},
+	panelHeader: {
+		display: "flex",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: "16px",
+		borderBottom: "1px solid #334155",
+		paddingBottom: "12px",
+	},
+	counter: {
+		fontSize: "0.8125rem",
+		color: "#94a3b8",
+		fontWeight: "500",
 	},
 	form: {
 		display: "flex",
 		flexDirection: "column",
-		gap: "15px",
+		gap: "16px",
+	},
+	inputGroup: {
+		display: "flex",
+		flexDirection: "column",
+		gap: "6px",
+	},
+	label: {
+		fontSize: "0.8125rem",
+		fontWeight: "500",
+		color: "#cbd5e1",
 	},
 	input: {
-		padding: "12px 16px",
-		fontSize: "15px",
-		borderRadius: "8px",
-		border: "1px solid #cbd5e0",
+		backgroundColor: "#0f172a",
+		border: "1px solid #475569",
+		borderRadius: "6px",
+		padding: "10px 12px",
+		color: "#ffffff",
+		fontSize: "0.875rem",
 		outline: "none",
-		transition: "border-color 0.2s",
 	},
 	textarea: {
-		padding: "12px 16px",
-		fontSize: "15px",
-		borderRadius: "8px",
-		border: "1px solid #cbd5e0",
+		backgroundColor: "#0f172a",
+		border: "1px solid #475569",
+		borderRadius: "6px",
+		padding: "10px 12px",
+		color: "#ffffff",
+		fontSize: "0.875rem",
 		outline: "none",
 		resize: "vertical",
 		fontFamily: "inherit",
 	},
-	button: {
-		padding: "12px",
-		fontSize: "16px",
-		fontWeight: "600",
-		backgroundColor: "#4f46e5",
-		color: "white",
+	primaryButton: {
+		backgroundColor: "#ffffff",
+		color: "#0f172a",
 		border: "none",
-		borderRadius: "8px",
-		cursor: "pointer",
-		transition: "background-color 0.2s",
-	},
-	section: {
-		marginTop: "20px",
-	},
-	sectionHeader: {
-		display: "flex",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: "20px",
-		borderBottom: "2px solid #edf2f7",
-		paddingBottom: "10px",
-	},
-	sectionTitle: {
-		fontSize: "1.5rem",
-		fontWeight: "700",
-		margin: "0",
-		color: "#1a202c",
-	},
-	badge: {
-		backgroundColor: "#e0e7ff",
-		color: "#4338ca",
-		padding: "4px 12px",
-		borderRadius: "20px",
-		fontSize: "14px",
+		borderRadius: "6px",
+		padding: "10px 16px",
+		fontSize: "0.875rem",
 		fontWeight: "600",
+		cursor: "pointer",
+		transition: "background-color 0.15s ease",
 	},
 	emptyState: {
+		padding: "32px",
 		textAlign: "center",
-		padding: "40px",
-		backgroundColor: "#f8fafc",
-		borderRadius: "12px",
-		border: "1px dashed #cbd5e0",
-		color: "#718096",
+		backgroundColor: "#0f172a",
+		borderRadius: "6px",
+		border: "1px dashed #334155",
 	},
-	notesGrid: {
+	emptyText: {
+		fontSize: "0.875rem",
+		color: "#64748b",
+		margin: "0",
+	},
+	notesList: {
 		display: "flex",
 		flexDirection: "column",
-		gap: "15px",
+		gap: "12px",
 	},
 	noteCard: {
-		backgroundColor: "#ffffff",
-		borderRadius: "10px",
-		padding: "20px",
-		boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
-		border: "1px solid #e2e8f0",
+		backgroundColor: "#0f172a",
+		border: "1px solid #334155",
+		borderRadius: "6px",
+		padding: "16px",
 		display: "flex",
 		justifyContent: "space-between",
 		alignItems: "flex-start",
-		transition: "transform 0.2s, box-shadow 0.2s",
 	},
-	noteContentWrapper: {
+	noteBody: {
 		flex: 1,
-		paddingRight: "15px",
+		paddingRight: "16px",
 	},
 	noteTitle: {
-		fontSize: "1.1rem",
+		fontSize: "0.9375rem",
 		fontWeight: "600",
-		color: "#2d3748",
-		margin: "0 0 8px 0",
+		color: "#f8fafc",
+		margin: "0 0 6px 0",
 	},
-	noteText: {
-		fontSize: "15px",
-		color: "#4a5568",
+	noteContent: {
+		fontSize: "0.875rem",
+		color: "#94a3b8",
 		margin: "0",
 		lineHeight: "1.5",
-		whiteSpace: "pre-wrap",
 		wordBreak: "break-word",
 	},
 	deleteButton: {
-		backgroundColor: "#fff5f5",
-		color: "#e53e3e",
-		border: "1px solid #fed7d7",
-		padding: "8px 12px",
+		backgroundColor: "transparent",
+		color: "#f87171",
+		border: "1px solid #7f1d1d",
 		borderRadius: "6px",
-		cursor: "pointer",
-		fontSize: "13px",
+		padding: "6px 12px",
+		fontSize: "0.75rem",
 		fontWeight: "600",
-		transition: "all 0.2s",
+		cursor: "pointer",
+		transition: "background-color 0.15s ease",
 	},
 };
 
