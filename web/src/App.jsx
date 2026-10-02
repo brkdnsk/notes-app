@@ -50,36 +50,34 @@ function App() {
 	};
 
 	return (
-		<div style={styles.layout}>
-			<header style={styles.header}>
-				<div style={styles.headerContent}>
-					<h1 style={styles.brandTitle}>Notes Dashboard</h1>
-					<span style={styles.envBadge}>Production</span>
-				</div>
-				<p style={styles.brandSubtitle}>
-					Spring Boot & React Enterprise Workspace
-				</p>
-			</header>
+		<div style={styles.page}>
+			<div style={styles.container}>
+				{/* Başlık Alanı */}
+				<header style={styles.header}>
+					<h1 style={styles.title}>Not Defteri</h1>
+					<p style={styles.subtitle}>
+						Spring Boot ve React Yönetim Paneli
+					</p>
+				</header>
 
-			<main style={styles.mainContainer}>
-				{/* Form Section */}
-				<section style={styles.panel}>
-					<h2 style={styles.panelTitle}>Create New Note</h2>
+				{/* Not Ekleme Formu */}
+				<section style={styles.section}>
+					<h2 style={styles.sectionTitle}>Yeni Not Oluştur</h2>
 					<form onSubmit={handleSubmit} style={styles.form}>
 						<div style={styles.inputGroup}>
-							<label style={styles.label}>Title</label>
+							<label style={styles.label}>Başlık</label>
 							<input
 								type="text"
-								placeholder="Enter note title..."
+								placeholder="Not başlığını girin..."
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
 								style={styles.input}
 							/>
 						</div>
 						<div style={styles.inputGroup}>
-							<label style={styles.label}>Content</label>
+							<label style={styles.label}>İçerik</label>
 							<textarea
-								placeholder="Write your note content here..."
+								placeholder="Not içeriğini buraya yazın..."
 								value={content}
 								onChange={(e) => setContent(e.target.value)}
 								rows={4}
@@ -89,35 +87,35 @@ function App() {
 						<button
 							type="submit"
 							style={{
-								...styles.primaryButton,
-								opacity: loading ? 0.6 : 1,
+								...styles.button,
+								opacity: loading ? 0.7 : 1,
 								cursor: loading ? "not-allowed" : "pointer",
 							}}
 							disabled={loading}
 						>
-							{loading ? "Processing..." : "Save Note"}
+							{loading ? "Kaydediliyor..." : "Notu Kaydet"}
 						</button>
 					</form>
 				</section>
 
-				{/* Notes List Section */}
-				<section style={styles.panel}>
-					<div style={styles.panelHeader}>
-						<h2 style={styles.panelTitle}>Recorded Notes</h2>
-						<span style={styles.counter}>{notes.length} Entries</span>
+				{/* Notlar Listesi */}
+				<section style={styles.section}>
+					<div style={styles.listHeader}>
+						<h2 style={styles.sectionTitle}>Kayıtlı Notlar</h2>
+						<span style={styles.counter}>{notes.length} Adet</span>
 					</div>
 
 					{notes.length === 0 ? (
-						<div style={styles.emptyState}>
+						<div style={styles.emptyBox}>
 							<p style={styles.emptyText}>
-								No records found in the database.
+								Veritabanında henüz kayıtlı bir not bulunmuyor.
 							</p>
 						</div>
 					) : (
-						<div style={styles.notesList}>
+						<div style={styles.notesContainer}>
 							{notes.map((note) => (
 								<article key={note.id} style={styles.noteCard}>
-									<div style={styles.noteBody}>
+									<div style={styles.noteInfo}>
 										<h3 style={styles.noteTitle}>{note.title}</h3>
 										<p style={styles.noteContent}>{note.content}</p>
 									</div>
@@ -125,94 +123,70 @@ function App() {
 										onClick={() => handleDelete(note.id)}
 										style={styles.deleteButton}
 									>
-										Delete
+										Sil
 									</button>
 								</article>
 							))}
 						</div>
 					)}
 				</section>
-			</main>
+			</div>
 		</div>
 	);
 }
 
-// Kurumsal ve Minimalist Stil Tanımlamaları
+// Tüm arkaplanı tek renk yapan ve Türkçe metinler içeren kurumsal stil yapısı
 const styles = {
-	layout: {
-		maxWidth: "900px",
-		margin: "0 auto",
-		padding: "40px 24px",
-		fontFamily:
-			'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-		backgroundColor: "#0f172a",
+	page: {
+		backgroundColor: "#0f172a", // Tüm sayfa arka planı tek renk
 		minHeight: "100vh",
+		width: "100%",
+		margin: "0",
+		padding: "40px 20px",
+		boxSizing: "border-box",
+		fontFamily:
+			'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
 		color: "#f8fafc",
 	},
+	container: {
+		maxWidth: "750px",
+		margin: "0 auto",
+		display: "flex",
+		flexDirection: "column",
+		gap: "30px",
+	},
 	header: {
-		marginBottom: "32px",
+		textAlign: "left",
 		borderBottom: "1px solid #1e293b",
 		paddingBottom: "20px",
 	},
-	headerContent: {
-		display: "flex",
-		alignItems: "center",
-		gap: "12px",
-	},
-	brandTitle: {
-		fontSize: "1.5rem",
-		fontWeight: "600",
-		letterSpacing: "-0.025em",
+	title: {
+		fontSize: "1.75rem",
+		fontWeight: "700",
+		margin: "0 0 6px 0",
 		color: "#ffffff",
+	},
+	subtitle: {
+		fontSize: "0.9rem",
+		color: "#94a3b8",
 		margin: "0",
 	},
-	envBadge: {
-		fontSize: "0.75rem",
-		fontWeight: "500",
-		backgroundColor: "#1e293b",
-		color: "#38bdf8",
-		padding: "2px 8px",
-		borderRadius: "4px",
-		border: "1px solid #334155",
-	},
-	brandSubtitle: {
-		fontSize: "0.875rem",
-		color: "#94a3b8",
-		margin: "4px 0 0 0",
-	},
-	mainContainer: {
-		display: "grid",
-		gap: "24px",
-	},
-	panel: {
-		backgroundColor: "#1e293b",
-		borderRadius: "8px",
-		border: "1px solid #334155",
-		padding: "24px",
-	},
-	panelTitle: {
-		fontSize: "1rem",
-		fontWeight: "600",
-		color: "#f1f5f9",
-		margin: "0 0 16px 0",
-	},
-	panelHeader: {
+	section: {
 		display: "flex",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: "16px",
-		borderBottom: "1px solid #334155",
-		paddingBottom: "12px",
+		flexDirection: "column",
+		gap: "16px",
 	},
-	counter: {
-		fontSize: "0.8125rem",
-		color: "#94a3b8",
-		fontWeight: "500",
+	sectionTitle: {
+		fontSize: "1.1rem",
+		fontWeight: "600",
+		color: "#e2e8f0",
+		margin: "0",
 	},
 	form: {
 		display: "flex",
 		flexDirection: "column",
-		gap: "16px",
+		gap: "14px",
+		backgroundColor: "#0f172a",
 	},
 	inputGroup: {
 		display: "flex",
@@ -220,60 +194,70 @@ const styles = {
 		gap: "6px",
 	},
 	label: {
-		fontSize: "0.8125rem",
+		fontSize: "0.85rem",
 		fontWeight: "500",
 		color: "#cbd5e1",
 	},
 	input: {
-		backgroundColor: "#0f172a",
-		border: "1px solid #475569",
+		backgroundColor: "#1e293b",
+		border: "1px solid #334155",
 		borderRadius: "6px",
-		padding: "10px 12px",
+		padding: "12px",
 		color: "#ffffff",
-		fontSize: "0.875rem",
+		fontSize: "0.9rem",
 		outline: "none",
 	},
 	textarea: {
-		backgroundColor: "#0f172a",
-		border: "1px solid #475569",
+		backgroundColor: "#1e293b",
+		border: "1px solid #334155",
 		borderRadius: "6px",
-		padding: "10px 12px",
+		padding: "12px",
 		color: "#ffffff",
-		fontSize: "0.875rem",
+		fontSize: "0.9rem",
 		outline: "none",
 		resize: "vertical",
 		fontFamily: "inherit",
 	},
-	primaryButton: {
-		backgroundColor: "#ffffff",
-		color: "#0f172a",
+	button: {
+		backgroundColor: "#3b82f6",
+		color: "#ffffff",
 		border: "none",
 		borderRadius: "6px",
-		padding: "10px 16px",
-		fontSize: "0.875rem",
+		padding: "12px",
+		fontSize: "0.9rem",
 		fontWeight: "600",
 		cursor: "pointer",
-		transition: "background-color 0.15s ease",
+		transition: "background-color 0.2s",
 	},
-	emptyState: {
-		padding: "32px",
+	listHeader: {
+		display: "flex",
+		justifyContent: "space-between",
+		alignItems: "center",
+		borderBottom: "1px solid #1e293b",
+		paddingBottom: "12px",
+	},
+	counter: {
+		fontSize: "0.85rem",
+		color: "#94a3b8",
+	},
+	emptyBox: {
+		padding: "30px",
 		textAlign: "center",
-		backgroundColor: "#0f172a",
-		borderRadius: "6px",
 		border: "1px dashed #334155",
+		borderRadius: "6px",
 	},
 	emptyText: {
-		fontSize: "0.875rem",
+		fontSize: "0.9rem",
 		color: "#64748b",
 		margin: "0",
 	},
-	notesList: {
+	notesContainer: {
 		display: "flex",
 		flexDirection: "column",
 		gap: "12px",
 	},
 	noteCard: {
-		backgroundColor: "#0f172a",
+		backgroundColor: "#1e293b",
 		border: "1px solid #334155",
 		borderRadius: "6px",
 		padding: "16px",
@@ -281,33 +265,32 @@ const styles = {
 		justifyContent: "space-between",
 		alignItems: "flex-start",
 	},
-	noteBody: {
+	noteInfo: {
 		flex: 1,
-		paddingRight: "16px",
+		paddingRight: "15px",
 	},
 	noteTitle: {
-		fontSize: "0.9375rem",
+		fontSize: "1rem",
 		fontWeight: "600",
 		color: "#f8fafc",
 		margin: "0 0 6px 0",
 	},
 	noteContent: {
-		fontSize: "0.875rem",
+		fontSize: "0.9rem",
 		color: "#94a3b8",
 		margin: "0",
-		lineHeight: "1.5",
+		lineHeight: "1.4",
 		wordBreak: "break-word",
 	},
 	deleteButton: {
 		backgroundColor: "transparent",
-		color: "#f87171",
+		color: "#ef4444",
 		border: "1px solid #7f1d1d",
 		borderRadius: "6px",
 		padding: "6px 12px",
-		fontSize: "0.75rem",
+		fontSize: "0.8rem",
 		fontWeight: "600",
 		cursor: "pointer",
-		transition: "background-color 0.15s ease",
 	},
 };
 
