@@ -1,122 +1,171 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import axios from "axios";
+import { useEffect, useState } from "react";
+import "./App.css";
+
+const API_URL = "http://localhost:8080/api/notes";
 
 function App() {
-  const [count, setCount] = useState(0)
+	const [notes, setNotes] = useState([]);
+	const [title, setTitle] = useState("");
+	const [content, setContent] = useState("");
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+	// 1. Sayfa yüklendiğinde notları getir (GET)
+	const fetchNotes = async () => {
+		try {
+			const response = await axios.get(API_URL);
+			setNotes(response.data);
+		} catch (error) {
+			console.error("Notlar getirilirken hata oluştu:", error);
+		}
+	};
 
-      <div className="ticks"></div>
+	useEffect(() => {
+		fetchNotes();
+	}, []);
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+	// 2. Yeni not ekle (POST)
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		if (!title.trim() || !content.trim()) return;
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+		try {
+			await axios.post(API_URL, { title, content });
+			setTitle("");
+			setContent("");
+			fetchNotes(); // Listeyi güncelle
+		} catch (error) {
+			console.error("Not eklenirken hata oluştu:", error);
+		}
+	};
+
+	// 3. Not sil (DELETE)
+	const handleDelete = async (id) => {
+		try {
+			await axios.delete(`${API_URL}/${id}`);
+			fetchNotes(); // Listeyi güncelle
+		} catch (error) {
+			console.error("Not silinirken hata oluştu:", error);
+		}
+	};
+
+	return (
+		<div
+			style={{
+				maxWidth: "600px",
+				margin: "40px auto",
+				fontFamily: "sans-serif",
+				padding: "0 20px",
+			}}
+		>
+			<h1>📝 Not Defteri Uygulaması</h1>
+
+			{/* Not Ekleme Formu */}
+			<form
+				onSubmit={handleSubmit}
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: "10px",
+					marginBottom: "30px",
+				}}
+			>
+				<input
+					type="text"
+					placeholder="Not Başlığı..."
+					value={title}
+					onChange={(e) => setTitle(e.target.value)}
+					style={{
+						padding: "10px",
+						fontSize: "16px",
+						borderRadius: "4px",
+						border: "1px solid #ccc",
+					}}
+				/>
+				<textarea
+					placeholder="Not içeriğini buraya yazın..."
+					value={content}
+					onChange={(e) => setContent(e.target.value)}
+					rows="3"
+					style={{
+						padding: "10px",
+						fontSize: "16px",
+						borderRadius: "4px",
+						border: "1px solid #ccc",
+					}}
+				/>
+				<button
+					type="submit"
+					style={{
+						padding: "10px",
+						fontSize: "16px",
+						backgroundColor: "#007bff",
+						color: "white",
+						border: "none",
+						borderRadius: "4px",
+						cursor: "pointer",
+					}}
+				>
+					Not Ekle
+				</button>
+			</form>
+
+			<hr style={{ border: "0.5px solid #eee", marginBottom: "20px" }} />
+
+			{/* Notların Listelenmesi */}
+			<h2>Notlarım</h2>
+			{notes.length === 0 ? (
+				<p style={{ color: "#666" }}>Henüz hiç not eklenmemiş.</p>
+			) : (
+				<div
+					style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+				>
+					{notes.map((note) => (
+						<div
+							key={note.id}
+							style={{
+								padding: "15px",
+								border: "1px solid #ddd",
+								borderRadius: "6px",
+								backgroundColor: "#f9f9f9",
+								display: "flex",
+								justifyContent: "space-between",
+								alignItems: "flex-start",
+							}}
+						>
+							<div>
+								<h3 style={{ margin: "0 0 8px 0", color: "#333" }}>
+									{note.title}
+								</h3>
+								<p
+									style={{
+										margin: "0",
+										color: "#555",
+										whiteSpace: "pre-wrap",
+									}}
+								>
+									{note.content}
+								</p>
+							</div>
+							<button
+								onClick={() => handleDelete(note.id)}
+								style={{
+									backgroundColor: "#dc3545",
+									color: "white",
+									border: "none",
+									padding: "6px 10px",
+									borderRadius: "4px",
+									cursor: "pointer",
+									fontSize: "14px",
+								}}
+							>
+								Sil
+							</button>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+	);
 }
 
-export default App
+export default App;
