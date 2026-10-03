@@ -24,6 +24,7 @@ export default function App() {
 	const [notes, setNotes] = useState<Note[]>([]);
 	const [title, setTitle] = useState<string>("");
 	const [content, setContent] = useState<string>("");
+	const [editingId, setEditingId] = useState<number | null>(null);
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const fetchNotes = async () => {
@@ -44,15 +45,28 @@ export default function App() {
 
 		setLoading(true);
 		try {
-			await axios.post(API_URL, { title, content });
+			if (editingId) {
+				// Güncelleme (PUT)
+				await axios.put(`${API_URL}/${editingId}`, { title, content });
+				setEditingId(null);
+			} else {
+				// Yeni Kayıt (POST)
+				await axios.post(API_URL, { title, content });
+			}
 			setTitle("");
 			setContent("");
 			fetchNotes();
 		} catch (error) {
-			console.error("Not eklenirken hata oluştu:", error);
+			console.error("İşlem sırasında hata oluştu:", error);
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	const handleEdit = (note: Note) => {
+		setEditingId(note.id);
+		setTitle(note.title);
+		setContent(note.content);
 	};
 
 	const handleDelete = async (id: number) => {
@@ -70,12 +84,20 @@ export default function App() {
 				<Text style={styles.noteTitle}>{item.title}</Text>
 				<Text style={styles.noteContent}>{item.content}</Text>
 			</View>
-			<TouchableOpacity
-				style={styles.deleteButton}
-				onPress={() => handleDelete(item.id)}
-			>
-				<Text style={styles.deleteButtonText}>Sil</Text>
-			</TouchableOpacity>
+			<View style={styles.actionButtons}>
+				<TouchableOpacity
+					style={styles.editButton}
+					onPress={() => handleEdit(item)}
+				>
+					<Text style={styles.editButtonText}>Düzenle</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					style={styles.deleteButton}
+					onPress={() => handleDelete(item.id)}
+				>
+					<Text style={styles.deleteButtonText}>Sil</Text>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 
@@ -93,7 +115,9 @@ export default function App() {
 				</View>
 
 				<View style={styles.formSection}>
-					<Text style={styles.sectionTitle}>Yeni Not Oluştur</Text>
+					<Text style={styles.sectionTitle}>
+						{editingId ? "Notu Düzenle" : "Yeni Not Oluştur"}
+					</Text>
 					<TextInput
 						style={styles.input}
 						placeholder="Başlık girin..."
@@ -109,15 +133,37 @@ export default function App() {
 						onChangeText={setContent}
 						multiline
 					/>
-					<TouchableOpacity
-						style={[styles.button, loading && { opacity: 0.7 }]}
-						onPress={handleSubmit}
-						disabled={loading}
-					>
-						<Text style={styles.buttonText}>
-							{loading ? "Kaydediliyor..." : "Notu Kaydet"}
-						</Text>
-					</TouchableOpacity>
+					<View style={styles.buttonRow}>
+						<TouchableOpacity
+							style={[
+								styles.button,
+								loading && { opacity: 0.7 },
+								{ flex: 1 },
+							]}
+							onPress={handleSubmit}
+							disabled={loading}
+						>
+							<Text style={styles.buttonText}>
+								{loading
+									? "İşleniyor..."
+									: editingId
+									? "Güncelle"
+									: "Notu Kaydet"}
+							</Text>
+						</TouchableOpacity>
+						{editingId && (
+							<TouchableOpacity
+								style={styles.cancelButton}
+								onPress={() => {
+									setEditingId(null);
+									setTitle("");
+									setContent("");
+								}}
+							>
+								<Text style={styles.cancelButtonText}>İptal</Text>
+							</TouchableOpacity>
+						)}
+					</View>
 				</View>
 
 				<View style={styles.listHeader}>
@@ -193,6 +239,10 @@ const styles = StyleSheet.create({
 		height: 80,
 		textAlignVertical: "top",
 	},
+	buttonRow: {
+		flexDirection: "row",
+		gap: 10,
+	},
 	button: {
 		backgroundColor: "#3b82f6",
 		borderRadius: 6,
@@ -201,6 +251,20 @@ const styles = StyleSheet.create({
 	},
 	buttonText: {
 		color: "#ffffff",
+		fontSize: 14,
+		fontWeight: "600",
+	},
+	cancelButton: {
+		borderWidth: 1,
+		borderColor: "#334155",
+		borderRadius: 6,
+		paddingVertical: 14,
+		paddingHorizontal: 16,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	cancelButtonText: {
+		color: "#94a3b8",
 		fontSize: 14,
 		fontWeight: "600",
 	},
@@ -260,12 +324,29 @@ const styles = StyleSheet.create({
 		color: "#94a3b8",
 		lineHeight: 18,
 	},
+	actionButtons: {
+		gap: 6,
+	},
+	editButton: {
+		borderWidth: 1,
+		borderColor: "#0369a1",
+		borderRadius: 6,
+		paddingVertical: 6,
+		paddingHorizontal: 10,
+		alignItems: "center",
+	},
+	editButtonText: {
+		color: "#38bdf8",
+		fontSize: 12,
+		fontWeight: "600",
+	},
 	deleteButton: {
 		borderWidth: 1,
 		borderColor: "#7f1d1d",
 		borderRadius: 6,
 		paddingVertical: 6,
 		paddingHorizontal: 10,
+		alignItems: "center",
 	},
 	deleteButtonText: {
 		color: "#ef4444",
